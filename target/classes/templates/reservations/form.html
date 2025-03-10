@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${reservation.id} ? 'Edit Reservation' : 'New Reservation'">Reservation Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Hotel Management</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/reservations">Reservations</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/rooms">Rooms</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/guests">Guests</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title mb-0" th:text="${reservation.id} ? 'Edit Reservation' : 'New Reservation'"></h3>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/reservations/save}" th:object="${reservation}" method="post" class="needs-validation" novalidate>
+                            <input type="hidden" th:field="*{id}">
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Guest</label>
+                                    <select th:field="*{guest}" class="form-select select2" required>
+                                        <option value="">Select Guest</option>
+                                        <option th:each="guest : ${guests}"
+                                                th:value="${guest.id}"
+                                                th:text="${guest.name + ' (' + guest.email + ')'}"></option>
+                                    </select>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('guest')}" 
+                                         th:errors="*{guest}"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Room</label>
+                                    <select th:field="*{room}" class="form-select select2" required>
+                                        <option value="">Select Room</option>
+                                        <option th:each="room : ${availableRooms}"
+                                                th:value="${room.id}"
+                                                th:text="${'Room ' + room.roomNumber + ' - ' + room.roomType + 
+                                                         ' ($' + room.ratePerNight + '/night)'}"></option>
+                                    </select>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('room')}" 
+                                         th:errors="*{room}"></div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Check-in Date</label>
+                                    <input type="text" th:field="*{checkInDate}" class="form-control datepicker" required>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('checkInDate')}" 
+                                         th:errors="*{checkInDate}"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Check-out Date</label>
+                                    <input type="text" th:field="*{checkOutDate}" class="form-control datepicker" required>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('checkOutDate')}" 
+                                         th:errors="*{checkOutDate}"></div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Number of Guests</label>
+                                    <input type="number" th:field="*{numberOfGuests}" class="form-control" 
+                                           min="1" required>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('numberOfGuests')}" 
+                                         th:errors="*{numberOfGuests}"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Status</label>
+                                    <select th:field="*{status}" class="form-select" required>
+                                        <option th:each="status : ${T(com.hotel.model.Reservation.Status).values()}"
+                                                th:value="${status}"
+                                                th:text="${status}"></option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Total Amount ($)</label>
+                                    <input type="number" th:field="*{totalAmount}" class="form-control" 
+                                           step="0.01" min="0" required readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Payment Status</label>
+                                    <select th:field="*{paymentStatus}" class="form-select" required>
+                                        <option th:each="status : ${T(com.hotel.model.Reservation.PaymentStatus).values()}"
+                                                th:value="${status}"
+                                                th:text="${status}"></option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Special Requests</label>
+                                <textarea th:field="*{specialRequests}" class="form-control" rows="3"></textarea>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a href="/reservations" class="btn btn-secondary me-md-2">Cancel</a>
+                                <button type="submit" class="btn btn-primary">Save Reservation</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        // Initialize date pickers
+        flatpickr(".datepicker", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            time_24hr: true,
+            minDate: "today",
+            onChange: function(selectedDates, dateStr, instance) {
+                if (instance.input.id === "checkInDate") {
+                    document.querySelector("#checkOutDate")._flatpickr.set("minDate", dateStr);
+                }
+                calculateTotal();
+            }
+        });
+
+        // Initialize select2 for better dropdowns
+        $(document).ready(function() {
+            $('.select2').select2({
+                theme: 'bootstrap-5'
+            });
+
+            // Calculate total when room changes
+            $('#room').change(calculateTotal);
+        });
+
+        // Calculate total amount
+        function calculateTotal() {
+            const roomSelect = document.getElementById('room');
+            const checkInDate = document.getElementById('checkInDate')._flatpickr.selectedDates[0];
+            const checkOutDate = document.getElementById('checkOutDate')._flatpickr.selectedDates[0];
+            
+            if (roomSelect.value && checkInDate && checkOutDate) {
+                const selectedOption = roomSelect.options[roomSelect.selectedIndex];
+                const ratePerNight = parseFloat(selectedOption.text.match(/\$(\d+(\.\d{1,2})?)/)[1]);
+                const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+                const total = ratePerNight * nights;
+                document.getElementById('totalAmount').value = total.toFixed(2);
+            }
+        }
+
+        // Form validation
+        (function () {
+            'use strict'
+            var forms = document.querySelectorAll('.needs-validation')
+            Array.prototype.slice.call(forms)
+                .forEach(function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (!form.checkValidity()) {
+                            event.preventDefault()
+                            event.stopPropagation()
+                        }
+                        form.classList.add('was-validated')
+                    }, false)
+                })
+        })()
+    </script>
+</body>
+</html>

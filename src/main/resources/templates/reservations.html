@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head}"></head>
+<body>
+    <nav th:replace="~{layout :: nav}"></nav>
+    
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Reservations</h2>
+            <a href="/reservation/new" class="btn btn-primary">New Reservation</a>
+        </div>
+        
+        <div class="alert alert-info" th:if="${reservations.empty}">
+            No reservations found.
+        </div>
+        
+        <div class="table-responsive" th:if="${!reservations.empty}">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Guest</th>
+                        <th>Room</th>
+                        <th>Check-in</th>
+                        <th>Check-out</th>
+                        <th>Status</th>
+                        <th>Payment</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="reservation : ${reservations}">
+                        <td th:text="${reservation.id}"></td>
+                        <td th:text="${reservation.guestName}"></td>
+                        <td th:text="${reservation.roomNumber}"></td>
+                        <td th:text="${#temporals.format(reservation.checkInDate, 'dd-MM-yyyy HH:mm')}"></td>
+                        <td th:text="${#temporals.format(reservation.checkOutDate, 'dd-MM-yyyy HH:mm')}"></td>
+                        <td>
+                            <span th:class="${'badge bg-' + 
+                                (reservation.status == 'CONFIRMED' ? 'success' : 
+                                (reservation.status == 'PENDING' ? 'warning' : 
+                                (reservation.status == 'CANCELLED' ? 'danger' : 'info')))}" 
+                                th:text="${reservation.status}"></span>
+                        </td>
+                        <td>
+                            <span th:class="${'badge bg-' + 
+                                (reservation.paymentStatus == 'PAID' ? 'success' : 
+                                (reservation.paymentStatus == 'PENDING' ? 'warning' : 'danger'))}" 
+                                th:text="${reservation.paymentStatus}"></span>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a th:href="@{/reservation/edit/{id}(id=${reservation.id})}" class="btn btn-outline-primary">Edit</a>
+                                <a th:href="@{/reservation/payment/{id}(id=${reservation.id})}" 
+                                   th:if="${reservation.paymentStatus == 'PENDING'}" 
+                                   class="btn btn-outline-success">Pay</a>
+                                <a th:href="@{/reservation/delete/{id}(id=${reservation.id})}" 
+                                   class="btn btn-outline-danger"
+                                   onclick="return confirm('Are you sure you want to delete this reservation?');">Delete</a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div th:replace="~{layout :: scripts}"></div>
+</body>
+</html>

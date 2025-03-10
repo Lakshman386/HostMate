@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head}"></head>
+<body>
+    <nav th:replace="~{layout :: nav}"></nav>
+    
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Reservation Management</h2>
+            <a href="/reservation/new" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Create New Reservation
+            </a>
+        </div>
+        
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Reservation List</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info" th:if="${#lists.isEmpty(reservations)}">
+                    No reservations found in the system.
+                </div>
+                <div class="table-responsive" th:if="${!#lists.isEmpty(reservations)}">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Guest</th>
+                                <th>Room</th>
+                                <th>Check-in</th>
+                                <th>Check-out</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Payment</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="reservation : ${reservations}">
+                                <td th:text="${reservation.id}"></td>
+                                <td th:text="${reservation.guestName}"></td>
+                                <td th:text="${reservation.roomNumber}"></td>
+                                <td th:text="${#temporals.format(reservation.checkInDate, 'dd-MM-yyyy')}"></td>
+                                <td th:text="${#temporals.format(reservation.checkOutDate, 'dd-MM-yyyy')}"></td>
+                                <td th:text="${#numbers.formatCurrency(reservation.amount)}"></td>
+                                <td>
+                                    <span th:class="${'badge bg-' + 
+                                        (reservation.status == 'CONFIRMED' ? 'success' : 
+                                        (reservation.status == 'PENDING' ? 'warning' : 
+                                        (reservation.status == 'CANCELLED' ? 'danger' : 'info')))}"
+                                          th:text="${reservation.status}"></span>
+                                </td>
+                                <td>
+                                    <span th:class="${'badge bg-' + 
+                                        (reservation.paymentStatus == 'PAID' ? 'success' : 'warning')}"
+                                          th:text="${reservation.paymentStatus}"></span>
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a th:href="@{/reservation/edit/{id}(id=${reservation.id})}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a th:if="${reservation.paymentStatus != 'PAID'}" 
+                                           th:href="@{/reservation/payment/{id}(id=${reservation.id})}" 
+                                           class="btn btn-sm btn-outline-success ms-1">
+                                            <i class="bi bi-credit-card"></i>
+                                        </a>
+                                        <a th:href="@{/reservation/delete/{id}(id=${reservation.id})}" 
+                                           class="btn btn-sm btn-outline-danger ms-1"
+                                           onclick="return confirm('Are you sure you want to delete this reservation?')">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div th:replace="~{layout :: scripts}"></div>
+</body>
+</html>
