@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: HostMate
+    env: docker
+    plan: free
+    envVars:
+      - key: JAVA_HOME
+        value: "/opt/render/project/.render/java-21"
+    buildCommand: |
+      chmod +x mvnw
+      ./mvnw clean install
+    startCommand: |
+      java -jar target/*.jar
