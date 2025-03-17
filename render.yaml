@@ -5,7 +5,7 @@ services:
     plan: free
     envVars:
       - key: JAVA_HOME
-        value: "/opt/render/project/.render/java-21"
+        value: "/opt/render/.jdk"
     buildCommand: |
       chmod +x mvnw
       ./mvnw clean install
