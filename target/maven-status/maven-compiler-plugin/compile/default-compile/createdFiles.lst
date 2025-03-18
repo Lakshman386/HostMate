@@ -1,13 +1,6 @@
-com\hotel\model\Room.class
-com\hotel\service\RoomService.class
-com\hotel\repository\ReservationRepository.class
-com\hotel\repository\RoomRepository.class
-com\hotel\service\GuestService.class
-com\hotel\repository\GuestRepository.class
 com\hotel\model\Reservation$PaymentMethod.class
 com\hotel\model\Guest.class
 com\hotel\HotelApplication.class
-com\hotel\service\ReservationService.class
 com\hotel\config\WebConfig.class
 com\hotel\controller\AdminController.class
 com\hotel\controller\ReservationController.class
