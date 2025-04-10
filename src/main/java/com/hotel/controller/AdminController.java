@@ -1,22 +1,34 @@
 package com.hotel.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
 import com.hotel.model.Guest;
 import com.hotel.model.Room;
-import com.hotel.model.Reservation;
 import com.hotel.service.GuestService;
 import com.hotel.service.ReservationService;
 import com.hotel.service.RoomService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.http.ResponseEntity;
-import java.util.Map;
-import java.util.HashMap;
 
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
+
+    @GetMapping("/login")
+    public String showLoginForm() {
+        return "admin/login";
+    }
 
     @Autowired
     private RoomService roomService;
@@ -29,16 +41,20 @@ public class AdminController {
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
-        // Add statistics to the model
-        model.addAttribute("totalRooms", roomService.getTotalRooms());
-        model.addAttribute("activeReservations", reservationService.getActiveReservationsCount());
-        model.addAttribute("totalGuests", guestService.getTotalGuests());
-        model.addAttribute("monthlyRevenue", reservationService.calculateMonthlyRevenue());
-        
-        // Add recent reservations
-        model.addAttribute("recentReservations", reservationService.getRecentReservations());
-        
-        return "admin/dashboard";
+        try {
+            // Add statistics to the model
+            model.addAttribute("totalRooms", roomService.getTotalRooms());
+            model.addAttribute("activeReservations", reservationService.getActiveReservationsCount());
+            model.addAttribute("totalGuests", guestService.getTotalGuests());
+            model.addAttribute("monthlyRevenue", reservationService.calculateMonthlyRevenue());
+            
+            // Add recent reservations
+            model.addAttribute("recentReservations", reservationService.getRecentReservations());
+            
+            return "admin/dashboard";
+        } catch (Exception e) {
+            return "redirect:/index.html";
+        }
     }
 
     @GetMapping("/rooms")
@@ -107,5 +123,10 @@ public class AdminController {
         stats.put("totalGuests", guestService.getTotalGuests());
         stats.put("monthlyRevenue", reservationService.calculateMonthlyRevenue());
         return ResponseEntity.ok(stats);
+    }
+
+    @GetMapping("/test")
+    public String testPage() {
+        return "admin/test";
     }
 }
