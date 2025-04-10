@@ -21,10 +21,10 @@
                                 <p><strong>Guest:</strong> <span th:text="${reservation.guestName}">Guest Name</span></p>
                                 <p><strong>Room Number:</strong> <span th:text="${reservation.roomNumber}">101</span></p>
                                 <p><strong>Check-in:</strong> 
-                                    <span th:text="${reservation.checkInDate != null} ? ${#temporals.format(reservation.checkInDate, 'dd-MM-yyyy HH:mm')} : 'N/A'"></span>
+                                    <span th:text="${#temporals.format(reservation.checkInDate, 'dd-MM-yyyy HH:mm')}">Check-in</span>
                                 </p>
                                 <p><strong>Check-out:</strong> 
-                                    <span th:text="${reservation.checkOutDate != null} ? ${#temporals.format(reservation.checkOutDate, 'dd-MM-yyyy HH:mm')} : 'N/A'"></span>
+                                    <span th:text="${#temporals.format(reservation.checkOutDate, 'dd-MM-yyyy HH:mm')}">Check-out</span>
                                 </p>
                             </div>
                             <div class="col-md-6">
@@ -34,8 +34,8 @@
                             </div>
                         </div>
                         
-                        <form th:action="@{/reservation/payment/process}" method="post">
-                            <input type="hidden" name="reservationId" th:value="${reservation != null} ? ${reservation.id} : ''" />
+                        <form th:action="@{/reservation/payment/process}" method="post" th:if="${reservation != null}">
+                            <input type="hidden" name="reservationId" th:value="${reservation.id}" />
                             
                             <div class="mb-3">
                                 <label for="paymentMethod" class="form-label">Payment Method</label>
@@ -87,6 +87,10 @@
                                 <button type="submit" class="btn btn-primary">Process Payment</button>
                             </div>
                         </form>
+                        
+                        <div th:if="${reservation == null}" class="alert alert-warning mt-3">
+                            Reservation not found or missing data.
+                        </div>
                     </div>
                 </div>
             </div>
@@ -101,7 +105,7 @@
             const creditCardDetails = document.getElementById('creditCardDetails');
             const upiDetails = document.getElementById('upiDetails');
             
-            paymentMethodSelect.addEventListener('change', function() {
+            paymentMethodSelect?.addEventListener('change', function() {
                 creditCardDetails.style.display = 'none';
                 upiDetails.style.display = 'none';
                 

@@ -114,6 +114,13 @@ public class AdminController {
             .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/guests/delete/{id}")
+public String deleteGuest(@PathVariable Long id) {
+    guestService.deleteGuest(id);
+    return "redirect:/admin/guests";
+}
+
+
     @GetMapping("/api/stats")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> getStats() {

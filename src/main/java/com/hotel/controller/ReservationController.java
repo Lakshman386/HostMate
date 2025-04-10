@@ -8,12 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import com.hotel.model.Guest;
 import com.hotel.model.Reservation;
@@ -29,10 +24,10 @@ public class ReservationController {
 
     @Autowired
     private ReservationService reservationService;
-    
+
     @Autowired
     private GuestService guestService;
-    
+
     @Autowired
     private RoomService roomService;
 
@@ -46,9 +41,12 @@ public class ReservationController {
     }
 
     @GetMapping("/reservations")
-    public String listReservations(Model model) {
+    public String listReservations(Model model, @RequestParam(value = "paymentSuccess", required = false) String paymentSuccess) {
         List<Reservation> reservations = reservationService.getAllReservations();
         model.addAttribute("reservations", reservations);
+        if ("true".equals(paymentSuccess)) {
+            model.addAttribute("successMessage", "Payment processed successfully!");
+        }
         return "reservations";
     }
 
@@ -61,8 +59,8 @@ public class ReservationController {
     }
 
     @PostMapping("/reservation/save")
-    public String saveReservation(@ModelAttribute("reservation") @Valid Reservation reservation, 
-                                  BindingResult result, 
+    public String saveReservation(@ModelAttribute("reservation") @Valid Reservation reservation,
+                                  BindingResult result,
                                   Model model) {
         if (result.hasErrors()) {
             model.addAttribute("guests", guestService.getAllGuests());
@@ -71,30 +69,30 @@ public class ReservationController {
         }
 
         try {
-            // Set default values
-            reservation.setPaymentStatus(Reservation.PaymentStatus.PAID);
-            reservation.setStatus(Reservation.ReservationStatus.CONFIRMED);
+            reservation.setPaymentStatus(Reservation.PaymentStatus.PENDING); // Not paid yet
+            reservation.setStatus(Reservation.ReservationStatus.PENDING);
             reservation.setReservationDate(LocalDateTime.now());
-            
-            // Create a guest if needed
+
             if (reservation.getGuestId() == null) {
                 Guest guest = new Guest();
                 guest.setName(reservation.getGuestName());
                 guest.setPhoneNumber(reservation.getPhoneNumber());
-                guest.setEmail(reservation.getGuestName().toLowerCase().replace(" ", ".") + "@example.com"); // Generate a dummy email
+                guest.setEmail(reservation.getGuestName().toLowerCase().replace(" ", ".") + "@example.com");
                 Guest savedGuest = guestService.createGuest(guest);
                 reservation.setGuestId(savedGuest.getId());
             }
-            
-            // Set roomId based on roomNumber if not provided
+
             if (reservation.getRoomId() == null && reservation.getRoomNumber() != null) {
                 Room room = roomService.getRoomByNumber(reservation.getRoomNumber())
                         .orElseThrow(() -> new IllegalArgumentException("Room not found with number: " + reservation.getRoomNumber()));
                 reservation.setRoomId(room.getId());
             }
 
-            reservationService.createReservation(reservation);
-            return "redirect:/reservations";
+            Reservation saved = reservationService.createReservation(reservation);
+
+            // Redirect to payment page for this reservation
+            return "redirect:/reservation/payment/" + saved.getId();
+
         } catch (Exception e) {
             model.addAttribute("errorMessage", "Error creating reservation: " + e.getMessage());
             model.addAttribute("guests", guestService.getAllGuests());
@@ -128,12 +126,12 @@ public class ReservationController {
     }
 
     @PostMapping("/reservation/payment/process")
-    public String processPayment(@RequestParam Long reservationId, 
+    public String processPayment(@RequestParam Long reservationId,
                                  @RequestParam Reservation.PaymentMethod paymentMethod,
                                  Model model) {
         try {
             Reservation reservation = reservationService.getReservationById(reservationId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid reservation Id:" + reservationId));
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid reservation Id:" + reservationId));
 
             reservation.setPaymentMethod(paymentMethod);
             reservation.setPaymentStatus(Reservation.PaymentStatus.PAID);
@@ -141,25 +139,21 @@ public class ReservationController {
 
             reservationService.updateReservation(reservationId, reservation);
 
-            model.addAttribute("successMessage", "Payment processed successfully!");
-            return "redirect:/reservations";
+            return "redirect:/reservations?paymentSuccess=true";
+
         } catch (Exception e) {
             model.addAttribute("errorMessage", "Error processing payment: " + e.getMessage());
             return "payment-form";
         }
     }
-    
+
     @GetMapping("/api/rooms/available")
     @ResponseBody
-    public boolean checkRoomAvailability(
-            @RequestParam Integer roomNumber,
-            @RequestParam String checkInDate,
-            @RequestParam String checkOutDate) {
-
+    public boolean checkRoomAvailability(@RequestParam Integer roomNumber,
+                                         @RequestParam String checkInDate,
+                                         @RequestParam String checkOutDate) {
         LocalDateTime checkIn = LocalDateTime.parse(checkInDate, formatter);
         LocalDateTime checkOut = LocalDateTime.parse(checkOutDate, formatter);
-
         return reservationService.isRoomAvailable(roomNumber, checkIn, checkOut);
     }
-    
 }

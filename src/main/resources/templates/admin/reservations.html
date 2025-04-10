@@ -3,7 +3,7 @@
 <head th:replace="~{layout :: head}"></head>
 <body>
     <nav th:replace="~{layout :: nav}"></nav>
-    
+
     <div class="container mt-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>Reservation Management</h2>
@@ -11,7 +11,13 @@
                 <i class="bi bi-plus-circle"></i> Create New Reservation
             </a>
         </div>
-        
+
+        <!-- Payment success alert (triggered after redirect from payment) -->
+        <div class="alert alert-success alert-dismissible fade show" th:if="${param.paymentSuccess}" role="alert">
+            Payment successful!
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
         <div class="card">
             <div class="card-header bg-primary text-white">
                 <h5 class="mb-0">Reservation List</h5>
@@ -80,7 +86,7 @@
             </div>
         </div>
     </div>
-    
+
     <div th:replace="~{layout :: scripts}"></div>
 </body>
 </html>
